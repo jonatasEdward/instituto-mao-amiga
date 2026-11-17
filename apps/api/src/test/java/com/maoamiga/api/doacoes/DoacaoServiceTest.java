@@ -40,7 +40,8 @@ class DoacaoServiceTest {
     void registraDoacaoComODoadorEOHorarioAtual() {
         UUID doadorId = UUID.randomUUID();
         UUID pontoId = UUID.randomUUID();
-        given(pontoService.buscar(pontoId)).willReturn(pontoQueAceitaDoacoes(true));
+        Ponto ponto = pontoQueAceitaDoacoes(true);
+        given(pontoService.buscar(pontoId)).willReturn(ponto);
 
         Doacao doacao = service.registrar(doadorId, pontoId, "Leite", 6, null);
 
@@ -51,7 +52,8 @@ class DoacaoServiceTest {
     @Test
     void recusaPontoQueNaoRecebeDoacoes() {
         UUID pontoId = UUID.randomUUID();
-        given(pontoService.buscar(pontoId)).willReturn(pontoQueAceitaDoacoes(false));
+        Ponto ponto = pontoQueAceitaDoacoes(false);
+        given(pontoService.buscar(pontoId)).willReturn(ponto);
 
         assertThatThrownBy(() -> service.registrar(UUID.randomUUID(), pontoId, "Leite", 6, null))
                 .isInstanceOf(RegraDeNegocioException.class);
