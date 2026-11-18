@@ -6,7 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 import { Botao } from '../componentes/Botao';
 import { Campo } from '../componentes/Campo';
 import { cores, espaco } from '../tema';
-import { temErros, validarCadastro, type Erros, type FormularioCadastro } from '../validacao/formularios';
+import { semErroNoCampo, temErros, validarCadastro, type Erros, type FormularioCadastro } from '../validacao/formularios';
 
 const PAPEIS: { valor: Papel; titulo: string; descricao: string }[] = [
   { valor: 'DOADOR', titulo: 'Quero doar', descricao: 'Registro doações e acompanho a entrega.' },
@@ -21,7 +21,10 @@ export function CadastroTela() {
   const [erroServidor, setErroServidor] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
 
-  const alterar = (campo: keyof FormularioCadastro) => (valor: string) => setForm((atual) => ({ ...atual, [campo]: valor }));
+  const alterar = (campo: keyof FormularioCadastro) => (valor: string) => {
+    setForm((atual) => ({ ...atual, [campo]: valor }));
+    setErros((atuais) => semErroNoCampo(atuais, campo));
+  };
 
   async function enviar() {
     const encontrados = validarCadastro(form);

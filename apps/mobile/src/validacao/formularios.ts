@@ -90,3 +90,12 @@ export function validarPonto(form: FormularioPonto): Erros<FormularioPonto> {
 }
 
 export const temErros = (erros: object) => Object.keys(erros).length > 0;
+
+export function semErroNoCampo<T>(erros: Erros<T>, campo: keyof T): Erros<T> {
+  if (!(campo in erros)) {
+    return erros;
+  }
+  const copia = { ...erros };
+  delete copia[campo];
+  return copia;
+}

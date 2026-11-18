@@ -44,6 +44,19 @@ describe('NovaDoacaoTela', () => {
     expect(doacoesApi.registrar).not.toHaveBeenCalled();
   });
 
+  it('apaga o erro do campo assim que ele é corrigido', () => {
+    renderizar();
+
+    fireEvent.changeText(screen.getByLabelText('Quantidade'), '0');
+    fireEvent.press(screen.getByRole('button', { name: 'Registrar doação' }));
+    expect(screen.getByText('Informe o que você vai doar.')).toBeTruthy();
+
+    fireEvent.changeText(screen.getByLabelText('Quantidade'), '6');
+
+    expect(screen.queryByText('A quantidade precisa ser um número inteiro maior que zero.')).toBeNull();
+    expect(screen.getByText('Informe o que você vai doar.')).toBeTruthy();
+  });
+
   it('registra a doação e leva para Minhas doações', async () => {
     jest.mocked(doacoesApi.registrar).mockResolvedValue({} as never);
     renderizar();

@@ -8,7 +8,7 @@ import { Botao } from '../componentes/Botao';
 import { Campo } from '../componentes/Campo';
 import type { MeusPontosParams } from '../navegacao/tipos';
 import { cores, espaco } from '../tema';
-import { temErros, validarPonto, type Erros, type FormularioPonto } from '../validacao/formularios';
+import { semErroNoCampo, temErros, validarPonto, type Erros, type FormularioPonto } from '../validacao/formularios';
 
 type Props = NativeStackScreenProps<MeusPontosParams, 'NovoPonto'>;
 
@@ -36,7 +36,10 @@ export function NovoPontoTela({ navigation }: Props) {
     },
   });
 
-  const alterar = (campo: keyof FormularioPonto) => (valor: string) => setForm((atual) => ({ ...atual, [campo]: valor }));
+  const alterar = (campo: keyof FormularioPonto) => (valor: string) => {
+    setForm((atual) => ({ ...atual, [campo]: valor }));
+    setErros((atuais) => semErroNoCampo(atuais, campo));
+  };
 
   function enviar() {
     const encontrados = validarPonto(form);

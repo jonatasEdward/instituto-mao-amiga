@@ -8,7 +8,7 @@ import { Botao } from '../componentes/Botao';
 import { Campo } from '../componentes/Campo';
 import type { PontosParams } from '../navegacao/tipos';
 import { cores, espaco } from '../tema';
-import { temErros, validarDoacao, type Erros, type FormularioDoacao } from '../validacao/formularios';
+import { semErroNoCampo, temErros, validarDoacao, type Erros, type FormularioDoacao } from '../validacao/formularios';
 
 type Props = NativeStackScreenProps<PontosParams, 'NovaDoacao'>;
 
@@ -27,7 +27,10 @@ export function NovaDoacaoTela({ route, navigation }: Props) {
     },
   });
 
-  const alterar = (campo: keyof FormularioDoacao) => (valor: string) => setForm((atual) => ({ ...atual, [campo]: valor }));
+  const alterar = (campo: keyof FormularioDoacao) => (valor: string) => {
+    setForm((atual) => ({ ...atual, [campo]: valor }));
+    setErros((atuais) => semErroNoCampo(atuais, campo));
+  };
 
   function enviar() {
     const encontrados = validarDoacao(form);
