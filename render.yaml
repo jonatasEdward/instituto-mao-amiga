@@ -8,6 +8,9 @@ services:
     dockerfilePath: ./Dockerfile
     healthCheckPath: /actuator/health
     autoDeploy: true
+    buildFilter:
+      paths:
+        - apps/api/**
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod,demo
