@@ -116,12 +116,24 @@ EXPO_PUBLIC_API_URL=http://SEU_IP_NA_REDE:8080 npx expo start
 
 No celular, use o IP da máquina na rede local, porque `localhost` aponta para o próprio aparelho. No emulador Android, use `http://10.0.2.2:8080`. Para abrir no navegador, rode `npx expo start --web`.
 
-### Contas de demonstração (perfil dev)
+### Contas de demonstração (perfis dev e demo)
 
 | Perfil | E-mail | Senha |
 | --- | --- | --- |
 | Doador | `doador@maoamiga.dev` | `maoamiga123` |
 | Responsável | `responsavel@maoamiga.dev` | `maoamiga123` |
+
+## Deploy
+
+| Parte | Onde roda | Como |
+| --- | --- | --- |
+| Banco | Neon (PostgreSQL gerenciado) | conexão com SSL; o schema é criado pelo Flyway na subida da API |
+| API | Render, a partir do `apps/api/Dockerfile` | descrita em [`render.yaml`](render.yaml); novo deploy a cada push na `main` |
+| App web | GitHub Pages | workflow [`deploy-web.yml`](.github/workflows/deploy-web.yml), que gera o build web do Expo |
+
+A API roda com os perfis `prod,demo`. O `prod` desliga o Swagger e exige `JWT_SECRET`, que o próprio Render gera na criação do serviço. O `demo` carrega os pontos e as contas de demonstração. Os dados de conexão do banco são preenchidos no painel do Render e nunca entram no repositório.
+
+A instância gratuita do Render dorme depois de 15 minutos sem tráfego. Por isso, a primeira requisição depois de um tempo parado pode levar um ou dois minutos. As seguintes respondem normalmente.
 
 ## Testes
 
