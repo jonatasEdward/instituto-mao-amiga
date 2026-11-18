@@ -13,6 +13,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class FluxoDeDoacaoIntegrationTest extends ApiTest {
 
     @Test
+    void listaPontosSemBuscaESemToken() throws Exception {
+        String responsavel = cadastrar("Vera", emailUnico("vera"), "RESPONSAVEL");
+        criarPonto(responsavel, "Ponto Lista Geral", "Roupas");
+
+        mockMvc.perform(get("/api/v1/pontos"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElementos").isNumber())
+                .andExpect(jsonPath("$.conteudo").isNotEmpty());
+
+        mockMvc.perform(get("/api/v1/pontos").param("busca", "   "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.conteudo").isNotEmpty());
+    }
+
+    @Test
     void doadorRegistraEResponsavelConfirmaORecebimento() throws Exception {
         String responsavel = cadastrar("Carla", emailUnico("carla"), "RESPONSAVEL");
         String pontoId = criarPonto(responsavel, "Ponto Teste Bueno", "Alimentos não perecíveis");
