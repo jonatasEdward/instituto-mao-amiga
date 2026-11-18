@@ -30,6 +30,9 @@
     },
     "plugins": [
       "expo-secure-store"
-    ]
+    ],
+    "experiments": {
+      "baseUrl": "/instituto-mao-amiga"
+    }
   }
 }
