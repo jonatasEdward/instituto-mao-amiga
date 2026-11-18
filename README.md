@@ -6,6 +6,14 @@
 
 App mobile e API para conectar quem quer doar aos pontos de coleta de Goiânia. O doador encontra um ponto, registra o que vai levar e acompanha se a doação chegou. Quem cuida do ponto vê o que está a caminho e confirma o recebimento.
 
+**Demo:** [jonatasedward.github.io/instituto-mao-amiga](https://jonatasedward.github.io/instituto-mao-amiga/). Entre como `doador@maoamiga.dev` ou `responsavel@maoamiga.dev`, senha `maoamiga123`. A API roda no plano gratuito do Render e dorme quando fica parada, então o primeiro acesso pode levar um ou dois minutos.
+
+| Pontos de coleta | Detalhe do ponto | Registrar doação |
+| :---: | :---: | :---: |
+| <img src="docs/telas/lista-de-pontos.png" width="220" alt="Lista de pontos de coleta com busca"> | <img src="docs/telas/detalhe-do-ponto.png" width="220" alt="Detalhe do ponto com endereço, horários e o que recebe"> | <img src="docs/telas/nova-doacao.png" width="220" alt="Formulário de nova doação"> |
+| **Minhas doações (doador)** | **Doações do ponto (responsável)** | **Recebimento confirmado** |
+| <img src="docs/telas/minhas-doacoes.png" width="220" alt="Doação aguardando entrega com opção de cancelar"> | <img src="docs/telas/doacoes-do-ponto.png" width="220" alt="Responsável vê a doação e confirma o recebimento"> | <img src="docs/telas/recebimento-confirmado.png" width="220" alt="Doação marcada como recebida"> |
+
 O repositório é um monorepo com as duas pontas do produto:
 
 ```
