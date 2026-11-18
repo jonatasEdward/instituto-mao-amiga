@@ -12,11 +12,12 @@ import java.util.UUID;
 
 interface PontoRepository extends JpaRepository<Ponto, UUID> {
 
+    Page<Ponto> findByAtivoTrue(Pageable pageable);
+
     @Query("""
             select p from Ponto p
             where p.ativo = true
-              and (:busca is null
-                   or lower(p.nome) like lower(concat('%', :busca, '%'))
+              and (lower(p.nome) like lower(concat('%', :busca, '%'))
                    or lower(p.bairro) like lower(concat('%', :busca, '%')))
             """)
     Page<Ponto> buscarAtivos(@Param("busca") String busca, Pageable pageable);

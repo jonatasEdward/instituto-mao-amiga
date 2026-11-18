@@ -28,8 +28,10 @@ public class PontoService {
 
     @Transactional(readOnly = true)
     public Page<Ponto> listar(String busca, Pageable pageable) {
-        String termo = busca == null || busca.isBlank() ? null : busca.trim();
-        return repository.buscarAtivos(termo, pageable);
+        if (busca == null || busca.isBlank()) {
+            return repository.findByAtivoTrue(pageable);
+        }
+        return repository.buscarAtivos(busca.trim(), pageable);
     }
 
     @Transactional(readOnly = true)
