@@ -26,7 +26,18 @@ class ArquiteturaTest {
     static final ArchRule sharedNaoConheceFeatures = noClasses()
             .that().resideInAPackage("..shared..")
             .should().dependOnClassesThat().resideInAnyPackage(
+                    "..auth..", "..usuarios..", "..pontos..", "..doacoes..", "..eventos..");
+
+    @ArchTest
+    static final ArchRule eventosNaoConhecemQuemPublica = noClasses()
+            .that().resideInAPackage("..eventos..")
+            .should().dependOnClassesThat().resideInAnyPackage(
                     "..auth..", "..usuarios..", "..pontos..", "..doacoes..");
+
+    @ArchTest
+    static final ArchRule soOOutboxFalaComOKafka = noClasses()
+            .that().resideOutsideOfPackage("..eventos..")
+            .should().dependOnClassesThat().resideInAnyPackage("org.apache.kafka..", "org.springframework.kafka..");
 
     @ArchTest
     static final ArchRule repositoriosSoSaoUsadosNaPropriaFeature = classes()

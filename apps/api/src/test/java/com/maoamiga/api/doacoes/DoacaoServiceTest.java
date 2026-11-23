@@ -1,5 +1,7 @@
 package com.maoamiga.api.doacoes;
 
+import com.maoamiga.api.eventos.Eventos;
+import com.maoamiga.api.eventos.EventosProperties;
 import com.maoamiga.api.pontos.Ponto;
 import com.maoamiga.api.pontos.PontoService;
 import com.maoamiga.api.shared.erro.AcessoNegadoException;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.Optional;
@@ -16,6 +19,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -27,11 +31,14 @@ class DoacaoServiceTest {
 
     private final DoacaoRepository repository = mock(DoacaoRepository.class);
     private final PontoService pontoService = mock(PontoService.class);
+    private final Eventos eventos = mock(Eventos.class);
     private DoacaoService service;
 
     @BeforeEach
     void configurar() {
-        service = new DoacaoService(repository, pontoService, Clock.fixed(AGORA, ZoneOffset.UTC));
+        service = new DoacaoService(repository, pontoService, eventos,
+                new EventosProperties(false, "maoamiga.donations.v1", Duration.ofSeconds(1), 50, Duration.ofDays(7)),
+                Clock.fixed(AGORA, ZoneOffset.UTC));
         given(repository.save(any(Doacao.class))).willAnswer(chamada -> chamada.getArgument(0));
         given(repository.saveAndFlush(any(Doacao.class))).willAnswer(chamada -> chamada.getArgument(0));
     }
@@ -47,6 +54,8 @@ class DoacaoServiceTest {
 
         assertThat(doacao.getDoadorId()).isEqualTo(doadorId);
         assertThat(doacao.getCriadaEm()).isEqualTo(AGORA);
+        verify(eventos).registrar(any(UUID.class), eq("maoamiga.donations.v1"), eq(doacao.getId().toString()),
+                eq("DonationRegistered"), any(EventoDeDoacaoV1.class));
     }
 
     @Test
@@ -58,6 +67,7 @@ class DoacaoServiceTest {
         assertThatThrownBy(() -> service.registrar(UUID.randomUUID(), pontoId, "Leite", 6, null))
                 .isInstanceOf(RegraDeNegocioException.class);
         verify(repository, never()).save(any());
+        verify(eventos, never()).registrar(any(), any(), any(), any(), any());
     }
 
     @Test
