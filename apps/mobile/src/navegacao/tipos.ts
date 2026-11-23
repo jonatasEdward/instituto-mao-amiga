@@ -19,5 +19,6 @@ export type AbasParams = {
   Pontos: undefined;
   MinhasDoacoes: undefined;
   MeusPontosAba: undefined;
+  Avisos: undefined;
   Perfil: undefined;
 };
