@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { configurarCliente } from '../api/cliente';
 import { authApi } from '../api/endpoints';
 import type { DadosCadastro, Sessao, Usuario } from '../api/tipos';
+import { esquecerAparelho } from '../push/registroDePush';
 import { apagarSessao, carregarSessao, salvarSessao } from './armazenamentoSessao';
 
 type AuthContextValor = {
@@ -27,6 +28,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const sair = useCallback(async () => {
+    // Ainda com o token válido: tira este aparelho da lista de push antes de encerrar a sessão.
+    await esquecerAparelho().catch(() => undefined);
     definirSessao(null);
     queryClient.clear();
     await apagarSessao();
