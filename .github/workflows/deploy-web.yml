@@ -43,6 +43,8 @@ jobs:
         run: npx expo export --platform web
         env:
           EXPO_PUBLIC_API_URL: ${{ vars.API_URL }}
+          # Opcional: sem ela, a aba de avisos não aparece.
+          EXPO_PUBLIC_NOTIFICATIONS_URL: ${{ vars.NOTIFICATIONS_URL }}
 
       - name: Fallback de rota para o GitHub Pages
         run: cp dist/index.html dist/404.html
