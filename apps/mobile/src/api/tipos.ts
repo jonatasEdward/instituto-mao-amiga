@@ -70,3 +70,24 @@ export type DadosCadastro = {
   senha: string;
   papel: Papel;
 };
+
+export type TipoAviso = 'DONATION_REGISTERED' | 'DONATION_RECEIVED' | 'DONATION_CANCELLED';
+
+export type Aviso = {
+  id: string;
+  type: TipoAviso;
+  title: string;
+  body: string;
+  referenceId: string | null;
+  createdAt: string;
+  read: boolean;
+};
+
+/** Paginação do notification-service, que responde em inglês. */
+export type PaginaDeAvisos = {
+  content: Aviso[];
+  page: number;
+  size: number;
+  totalElements: number;
+  totalPages: number;
+};
