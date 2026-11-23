@@ -73,6 +73,18 @@ class AuthIntegrationTest extends ApiTest {
     }
 
     @Test
+    void publicaSomenteAChavePublicaNoJwks() throws Exception {
+        mockMvc.perform(get("/.well-known/jwks.json"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.keys[0].kty").value("RSA"))
+                .andExpect(jsonPath("$.keys[0].alg").value("RS256"))
+                .andExpect(jsonPath("$.keys[0].kid").value("mao-amiga-1"))
+                .andExpect(jsonPath("$.keys[0].n").isNotEmpty())
+                .andExpect(jsonPath("$.keys[0].d").doesNotExist())
+                .andExpect(jsonPath("$.keys[0].p").doesNotExist());
+    }
+
+    @Test
     void exigeTokenParaRotasProtegidas() throws Exception {
         mockMvc.perform(get("/api/v1/usuarios/me"))
                 .andExpect(status().isUnauthorized());
