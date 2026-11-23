@@ -13,8 +13,12 @@ services:
         value: prod,demo
       - key: JAVA_TOOL_OPTIONS
         value: -XX:MaxRAMPercentage=60 -XX:+UseSerialGC -Xss512k -XX:TieredStopAtLevel=1
-      - key: JWT_SECRET
-        generateValue: true
+      - key: JWT_PRIVATE_KEY
+        sync: false
+      - key: EVENTS_KAFKA_ENABLED
+        value: "false"
+      - key: KAFKA_BOOTSTRAP_SERVERS
+        sync: false
       - key: CORS_ORIGINS
         value: https://jonatasedward.github.io
       - key: SPRING_DATASOURCE_URL
