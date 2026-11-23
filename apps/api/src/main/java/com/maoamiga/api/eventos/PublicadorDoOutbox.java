@@ -1,5 +1,6 @@
 package com.maoamiga.api.eventos;
 
+import io.opentelemetry.context.Scope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -38,7 +39,9 @@ class PublicadorDoOutbox {
         List<EventoPendente> pendentes = repository.travarPendentes(propriedades.tamanhoDoLote());
         int publicados = 0;
         for (EventoPendente evento : pendentes) {
-            try {
+            try (Scope ignorado = ContextoDeTrace.restaurar(evento.getTraceparent())) {
+                // Com o contexto da requisição original ativo, o envio vira um span filho dela e o
+                // traceparent segue nos headers da mensagem até o consumidor.
                 kafka.send(evento.getTopico(), evento.getChave(), evento.getPayload())
                         .get(TEMPO_MAXIMO_DE_ENVIO_SEGUNDOS, TimeUnit.SECONDS);
                 evento.marcarPublicado(clock.instant());

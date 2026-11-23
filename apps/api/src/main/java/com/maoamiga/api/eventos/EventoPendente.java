@@ -42,16 +42,25 @@ class EventoPendente implements Persistable<UUID> {
     @Column(name = "ultimo_erro", length = TAMANHO_MAXIMO_DO_ERRO)
     private String ultimoErro;
 
+    @Column(length = 64, updatable = false)
+    private String traceparent;
+
     protected EventoPendente() {
     }
 
-    EventoPendente(UUID id, String topico, String chave, String tipo, String payload, Instant criadoEm) {
+    EventoPendente(UUID id, String topico, String chave, String tipo, String payload, Instant criadoEm,
+                   String traceparent) {
         this.id = id;
         this.topico = topico;
         this.chave = chave;
         this.tipo = tipo;
         this.payload = payload;
         this.criadoEm = criadoEm;
+        this.traceparent = traceparent;
+    }
+
+    String getTraceparent() {
+        return traceparent;
     }
 
     void marcarPublicado(Instant agora) {

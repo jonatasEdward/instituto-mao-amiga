@@ -30,6 +30,6 @@ public class Eventos {
     @Transactional(propagation = Propagation.MANDATORY)
     public void registrar(UUID idDoEvento, String topico, String chave, String tipo, Object payload) {
         repository.save(new EventoPendente(idDoEvento, topico, chave, tipo, JSON.writeValueAsString(payload),
-                clock.instant()));
+                clock.instant(), ContextoDeTrace.capturar()));
     }
 }
