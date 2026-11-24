@@ -22,6 +22,18 @@ describe('converterErro', () => {
     expect(erro.mensagemParaUsuario).toBe('email: deve ser um e-mail válido');
   });
 
+  it('entende também os erros em inglês do notification-service', async () => {
+    const erro = await converterErro(
+      resposta(400, {
+        title: 'Invalid request',
+        detail: 'one or more fields are invalid',
+        errors: [{ field: 'pushToken', message: 'must match pattern' }],
+      }),
+    );
+
+    expect(erro.campos).toEqual([{ campo: 'pushToken', mensagem: 'must match pattern' }]);
+  });
+
   it('usa uma mensagem genérica quando o corpo não é JSON', async () => {
     const erro = await converterErro({
       ok: false,

@@ -36,13 +36,15 @@ export function configurarCliente(nova: Configuracao) {
 }
 
 type Opcoes = {
-  metodo?: 'GET' | 'POST' | 'PUT';
+  metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   corpo?: unknown;
   parametros?: Record<string, string | number | undefined>;
+  /** Outro serviço que aceita o mesmo token, como o notification-service. Padrão: a API do Mão Amiga. */
+  base?: string;
 };
 
 export async function requisitar<T>(caminho: string, opcoes: Opcoes = {}): Promise<T> {
-  const url = montarUrl(caminho, opcoes.parametros);
+  const url = montarUrl(opcoes.base ?? API_URL, caminho, opcoes.parametros);
   const token = configuracao.obterToken();
 
   let resposta: Response;
@@ -81,17 +83,29 @@ export async function converterErro(resposta: Response): Promise<ApiError> {
       resposta.status,
       corpo.title ?? 'Erro',
       corpo.detail ?? 'Algo deu errado. Tente de novo.',
-      Array.isArray(corpo.erros) ? corpo.erros : [],
+      camposInvalidos(corpo),
     );
   } catch {
     return new ApiError(resposta.status, 'Erro', 'Algo deu errado. Tente de novo.');
   }
 }
 
-function montarUrl(caminho: string, parametros?: Opcoes['parametros']): string {
+// A API do Mão Amiga responde em português (erros: campo/mensagem) e o notification-service em inglês
+// (errors: field/message). O app trata os dois do mesmo jeito.
+function camposInvalidos(corpo: { erros?: unknown; errors?: unknown }): CampoInvalido[] {
+  if (Array.isArray(corpo.erros)) {
+    return corpo.erros as CampoInvalido[];
+  }
+  if (Array.isArray(corpo.errors)) {
+    return (corpo.errors as { field: string; message: string }[]).map((e) => ({ campo: e.field, mensagem: e.message }));
+  }
+  return [];
+}
+
+function montarUrl(base: string, caminho: string, parametros?: Opcoes['parametros']): string {
   const query = Object.entries(parametros ?? {})
     .filter(([, valor]) => valor !== undefined && valor !== '')
     .map(([chave, valor]) => `${encodeURIComponent(chave)}=${encodeURIComponent(String(valor))}`)
     .join('&');
-  return `${API_URL}${caminho}${query ? `?${query}` : ''}`;
+  return `${base}${caminho}${query ? `?${query}` : ''}`;
 }

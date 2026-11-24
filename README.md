@@ -39,6 +39,11 @@ apps/
 - lista as doações registradas para cada ponto
 - confirma o recebimento de cada doação
 
+**Avisos (os dois perfis)**
+- aba de avisos com contador de não lidos: o responsável fica sabendo de doações novas e cancelamentos, e o doador fica sabendo quando a doação chegou
+- push no celular, quando o usuário permite
+- os avisos vêm do [notification-service](https://github.com/jonatasEdward/notification-service), que consome os eventos de doação publicados pela API. Sem `EXPO_PUBLIC_NOTIFICATIONS_URL`, a aba não aparece e o resto do app funciona igual.
+
 ## Arquitetura
 
 ```mermaid
@@ -186,7 +191,7 @@ No app, as regras de validação e o cliente HTTP são testados isoladamente, e 
 - **Sem refresh token.** O token vale 8 horas e depois o usuário entra de novo. O próximo passo é um refresh token rotativo guardado no servidor, o que também permite revogar sessões.
 - **Login sem limite de tentativas.** Antes de ir para produção, o endpoint de login precisa de rate limiting por IP e por conta.
 - **Edição de ponto só pela API.** O app cadastra pontos, mas ainda não tem a tela de edição. O endpoint `PUT /api/v1/pontos/{id}` já existe.
-- **Sem notificações.** O doador descobre que a doação chegou abrindo o app. Push notifications com Expo resolveriam isso.
+- **Push depende de um projeto no EAS.** O token de push da Expo é emitido por projeto, então o push só funciona num build com `extra.eas.projectId`. Sem isso, os avisos continuam chegando pela aba. No navegador não existe push.
 - **Busca só por texto.** Ordenar os pontos pela distância do usuário exige latitude e longitude no cadastro e o uso de geolocalização no app.
 
 ## Licença
