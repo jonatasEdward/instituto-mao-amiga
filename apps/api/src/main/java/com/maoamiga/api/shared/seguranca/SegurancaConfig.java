@@ -28,7 +28,7 @@ class SegurancaConfig {
                 .sessionManagement(sessao -> sessao.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(regras -> regras
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/cadastro", "/api/v1/auth/login").permitAll()
-                        .requestMatchers("/error", "/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                        .requestMatchers("/error", "/.well-known/jwks.json", "/actuator/health/**", "/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/pontos/meus").hasRole("RESPONSAVEL")
                         .requestMatchers(HttpMethod.GET, "/api/v1/pontos/*/doacoes").hasRole("RESPONSAVEL")
                         .requestMatchers(HttpMethod.GET, "/api/v1/pontos", "/api/v1/pontos/*").permitAll()

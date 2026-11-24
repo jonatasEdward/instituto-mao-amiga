@@ -11,14 +11,28 @@ spring:
       ddl-auto: validate
   flyway:
     locations: classpath:db/migration
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
 
 server:
   port: ${PORT:8080}
 
 app:
   jwt:
-    secret: ${JWT_SECRET:segredo-local-de-desenvolvimento-troque-em-producao}
+    chave-privada: ${JWT_PRIVATE_KEY:}
+    id-da-chave: ${JWT_KEY_ID:mao-amiga-1}
+    gerar-chave-temporaria: true
     expiracao: 8h
+  eventos:
+    publicar-no-kafka: ${EVENTS_KAFKA_ENABLED:false}
+    topico-doacoes: maoamiga.donations.v1
+    intervalo: PT1S
+    tamanho-do-lote: 50
+    reter-publicados-por: 7d
   cors:
     origens-permitidas: ${CORS_ORIGINS:http://localhost:8081,http://localhost:19006}
 

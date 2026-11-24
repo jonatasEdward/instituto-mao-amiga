@@ -1,34 +1,49 @@
 package com.maoamiga.api.shared.seguranca;
 
-import com.nimbusds.jose.jwk.source.ImmutableSecret;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-
+/**
+ * Tokens assinados com RS256. A chave pública sai em /.well-known/jwks.json, e outros serviços
+ * (como o notification-service) validam tokens sem conhecer nenhum segredo desta API.
+ */
 @Configuration
 class JwtConfig {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtConfig.class);
+
     @Bean
-    JwtEncoder jwtEncoder(JwtProperties propriedades) {
-        return new NimbusJwtEncoder(new ImmutableSecret<>(chave(propriedades)));
+    RSAKey chaveDeAssinatura(JwtProperties propriedades) {
+        if (propriedades.temChaveConfigurada()) {
+            return ChaveRsa.dePem(propriedades.chavePrivada(), propriedades.idDaChave());
+        }
+        log.warn("JWT_PRIVATE_KEY não definida: usando chave RSA temporária. Tokens deixam de valer a cada reinício.");
+        return ChaveRsa.temporaria(propriedades.idDaChave());
     }
 
     @Bean
-    JwtDecoder jwtDecoder(JwtProperties propriedades) {
-        return NimbusJwtDecoder.withSecretKey(chave(propriedades))
-                .macAlgorithm(MacAlgorithm.HS256)
+    JwtEncoder jwtEncoder(RSAKey chaveDeAssinatura) {
+        return new NimbusJwtEncoder(new ImmutableJWKSet<>(new JWKSet(chaveDeAssinatura)));
+    }
+
+    @Bean
+    JwtDecoder jwtDecoder(RSAKey chaveDeAssinatura) throws JOSEException {
+        NimbusJwtDecoder decoder = NimbusJwtDecoder.withPublicKey(chaveDeAssinatura.toRSAPublicKey())
+                .signatureAlgorithm(SignatureAlgorithm.RS256)
                 .build();
-    }
-
-    private static SecretKey chave(JwtProperties propriedades) {
-        return new SecretKeySpec(propriedades.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(ClaimsJwt.EMISSOR));
+        return decoder;
     }
 }
