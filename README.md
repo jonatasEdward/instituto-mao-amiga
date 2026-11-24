@@ -13,8 +13,10 @@ App mobile e API para conectar quem quer doar aos pontos de coleta de Goiânia. 
 | <img src="docs/telas/lista-de-pontos.png" width="220" alt="Lista de pontos de coleta com busca"> | <img src="docs/telas/detalhe-do-ponto.png" width="220" alt="Detalhe do ponto com endereço, horários e o que recebe"> | <img src="docs/telas/nova-doacao.png" width="220" alt="Formulário de nova doação"> |
 | **Minhas doações (doador)** | **Doações do ponto (responsável)** | **Recebimento confirmado** |
 | <img src="docs/telas/minhas-doacoes.png" width="220" alt="Doação aguardando entrega com opção de cancelar"> | <img src="docs/telas/doacoes-do-ponto.png" width="220" alt="Responsável vê a doação e confirma o recebimento"> | <img src="docs/telas/recebimento-confirmado.png" width="220" alt="Doação marcada como recebida"> |
+| **Avisos (responsável)** | | |
+| <img src="docs/telas/avisos.png" width="220" alt="Aviso de nova doação a caminho, vindo do notification-service"> | | |
 
-> **English summary.** A mobile app and API that connect people who want to donate with donation drop-off points in Goiânia, Brazil. Donors find a point, register what they will bring and follow its status; the person running the point sees incoming donations and confirms receipt. It is a monorepo with a Spring Boot 4 API (Java 21, PostgreSQL, Flyway, JWT with roles, Problem Details errors, optimistic locking, Testcontainers integration tests, ArchUnit rules) and an Expo app in strict TypeScript (React Query, SecureStore, Testing Library). Both have CI, the API runs on Render with Neon PostgreSQL, and the web build is live at the demo link above. The API is organized by feature rather than with hexagonal architecture on purpose; the section "Por que camadas por feature e não hexagonal" explains the trade-off. The rest of this README is in Portuguese.
+> **English summary.** A mobile app and API that connect people who want to donate with donation drop-off points in Goiânia, Brazil. Donors find a point, register what they will bring and follow its status; the person running the point sees incoming donations and confirms receipt. It is a monorepo with a Spring Boot 4 API (Java 21, PostgreSQL, Flyway, JWT with roles, Problem Details errors, optimistic locking, Testcontainers integration tests, ArchUnit rules) and an Expo app in strict TypeScript (React Query, SecureStore, Testing Library). Donation changes are published as events through a transactional outbox to Kafka and turned into in-app notifications by the [notification-service](https://github.com/jonatasEdward/notification-service), which validates this API's RS256 tokens through its JWKS endpoint; one OpenTelemetry trace covers the whole path. Everything has CI, the API and the notification service run on Render with Neon PostgreSQL and Kafka on Aiven, and the web build is live at the demo link above. The API is organized by feature rather than with hexagonal architecture on purpose; the section "Por que camadas por feature e não hexagonal" explains the trade-off. The rest of this README is in Portuguese.
 
 O repositório é um monorepo com as duas pontas do produto:
 
@@ -148,11 +150,13 @@ No celular, use o IP da máquina na rede local, porque `localhost` aponta para o
 | --- | --- | --- |
 | Banco | Neon (PostgreSQL gerenciado) | conexão com SSL; o schema é criado pelo Flyway na subida da API |
 | API | Render, a partir do `apps/api/Dockerfile` | descrita em [`render.yaml`](render.yaml); novo deploy a cada push na `main` |
+| Kafka | Aiven (plano free) | TLS com certificado de cliente, perfil `kafka-aiven`; tópicos `maoamiga.donations.v1` e `.DLT` |
+| Avisos | Render ([notification-service](https://github.com/jonatasEdward/notification-service)) | consome os eventos de doação do Kafka e valida o JWT pelo JWKS desta API |
 | App web | GitHub Pages | workflow [`deploy-web.yml`](.github/workflows/deploy-web.yml), que gera o build web do Expo |
 
-A API roda com os perfis `prod,demo`. O `prod` desliga o Swagger e exige `JWT_SECRET`, que o próprio Render gera na criação do serviço. O `demo` carrega os pontos e as contas de demonstração. Os dados de conexão do banco são preenchidos no painel do Render e nunca entram no repositório.
+A API roda com os perfis `prod,demo,kafka-aiven`. O `prod` desliga o Swagger e exige `JWT_PRIVATE_KEY`. O `demo` carrega os pontos e as contas de demonstração, e o `kafka-aiven` configura a conexão TLS com o Kafka. A chave do JWT, os certificados do Kafka e os dados do banco são preenchidos no painel do Render e nunca entram no repositório.
 
-A instância gratuita do Render dorme depois de 15 minutos sem tráfego. Por isso, a primeira requisição depois de um tempo parado pode levar um ou dois minutos. As seguintes respondem normalmente.
+As instâncias gratuitas do Render dormem depois de 15 minutos sem tráfego. Por isso, a primeira requisição depois de um tempo parado pode levar um ou dois minutos. Os eventos não se perdem enquanto os serviços dormem: ficam no outbox ou no Kafka e são processados quando os serviços acordam.
 
 ## Testes
 
