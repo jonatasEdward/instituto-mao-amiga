@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useAuth } from '../auth/AuthContext';
 import { Carregando } from '../componentes/Estados';
+import { RotuloComContador } from '../componentes/RotuloComContador';
 import { AVISOS_HABILITADOS } from '../config';
 import { useAvisos } from '../push/useAvisos';
 import { AvisosTela } from '../telas/AvisosTela';
@@ -80,7 +81,7 @@ function AbasLogado() {
           component={AvisosTela}
           options={{
             title: 'Avisos',
-            tabBarBadge: naoLidos > 0 ? (naoLidos > 99 ? '99+' : naoLidos) : undefined,
+            tabBarLabel: ({ focused }) => <RotuloComContador texto="Avisos" contador={naoLidos} focado={focused} />,
             tabBarAccessibilityLabel: naoLidos > 0 ? `Avisos, ${naoLidos} não lidos` : 'Avisos',
           }}
         />
