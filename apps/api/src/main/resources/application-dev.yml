@@ -1,3 +1,6 @@
 spring:
   flyway:
     locations: classpath:db/migration,classpath:db/demo
+    # Os dados de demonstração são a V1000, para rodar depois do schema num banco novo. Num banco que
+    # já tem a V1000, migrações de schema novas (V2, V3...) têm número menor e só entram fora de ordem.
+    out-of-order: true
