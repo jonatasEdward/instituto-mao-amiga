@@ -14,6 +14,8 @@ App mobile e API para conectar quem quer doar aos pontos de coleta de Goiânia. 
 | **Minhas doações (doador)** | **Doações do ponto (responsável)** | **Recebimento confirmado** |
 | <img src="docs/telas/minhas-doacoes.png" width="220" alt="Doação aguardando entrega com opção de cancelar"> | <img src="docs/telas/doacoes-do-ponto.png" width="220" alt="Responsável vê a doação e confirma o recebimento"> | <img src="docs/telas/recebimento-confirmado.png" width="220" alt="Doação marcada como recebida"> |
 
+> **English summary.** A mobile app and API that connect people who want to donate with donation drop-off points in Goiânia, Brazil. Donors find a point, register what they will bring and follow its status; the person running the point sees incoming donations and confirms receipt. It is a monorepo with a Spring Boot 4 API (Java 21, PostgreSQL, Flyway, JWT with roles, Problem Details errors, optimistic locking, Testcontainers integration tests, ArchUnit rules) and an Expo app in strict TypeScript (React Query, SecureStore, Testing Library). Both have CI, the API runs on Render with Neon PostgreSQL, and the web build is live at the demo link above. The API is organized by feature rather than with hexagonal architecture on purpose; the section "Por que camadas por feature e não hexagonal" explains the trade-off. The rest of this README is in Portuguese.
+
 O repositório é um monorepo com as duas pontas do produto:
 
 ```
