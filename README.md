@@ -6,7 +6,7 @@
 
 App mobile e API para conectar quem quer doar aos pontos de coleta de Goiânia. O doador encontra um ponto, registra o que vai levar e acompanha se a doação chegou. Quem cuida do ponto vê o que está a caminho e confirma o recebimento.
 
-**Demo:** [jonatasedward.github.io/instituto-mao-amiga](https://jonatasedward.github.io/instituto-mao-amiga/). Entre como `doador@maoamiga.dev` ou `responsavel@maoamiga.dev`, senha `maoamiga123`. A API roda no plano gratuito do Render e dorme quando fica parada, então o primeiro acesso pode levar um ou dois minutos.
+É um projeto modelo: serve de referência para a forma como organizo código, testes e decisões técnicas em um produto mobile com backend. As telas abaixo são do app rodando, e a seção [Como rodar](#como-rodar) sobe tudo na sua máquina.
 
 | Pontos de coleta | Detalhe do ponto | Registrar doação |
 | :---: | :---: | :---: |
@@ -16,7 +16,7 @@ App mobile e API para conectar quem quer doar aos pontos de coleta de Goiânia. 
 | **Avisos (responsável)** | | |
 | <img src="docs/telas/avisos.png" width="220" alt="Aviso de nova doação a caminho, vindo do notification-service"> | | |
 
-> **English summary.** A mobile app and API that connect people who want to donate with donation drop-off points in Goiânia, Brazil. Donors find a point, register what they will bring and follow its status; the person running the point sees incoming donations and confirms receipt. It is a monorepo with a Spring Boot 4 API (Java 21, PostgreSQL, Flyway, JWT with roles, Problem Details errors, optimistic locking, Testcontainers integration tests, ArchUnit rules) and an Expo app in strict TypeScript (React Query, SecureStore, Testing Library). Donation changes are published as events through a transactional outbox to Kafka and turned into in-app notifications by the [notification-service](https://github.com/jonatasEdward/notification-service), which validates this API's RS256 tokens through its JWKS endpoint; one OpenTelemetry trace covers the whole path. Everything has CI, the API and the notification service run on Render with Neon PostgreSQL and Kafka on Aiven, and the web build is live at the demo link above. The API is organized by feature rather than with hexagonal architecture on purpose; the section "Por que camadas por feature e não hexagonal" explains the trade-off. The rest of this README is in Portuguese.
+> **English summary.** A mobile app and API that connect people who want to donate with donation drop-off points in Goiânia, Brazil. Donors find a point, register what they will bring and follow its status; the person running the point sees incoming donations and confirms receipt. It is a monorepo with a Spring Boot 4 API (Java 21, PostgreSQL, Flyway, JWT with roles, Problem Details errors, optimistic locking, Testcontainers integration tests, ArchUnit rules) and an Expo app in strict TypeScript (React Query, SecureStore, Testing Library). Donation changes are published as events through a transactional outbox to Kafka and turned into in-app notifications by the [notification-service](https://github.com/jonatasEdward/notification-service), which validates this API's RS256 tokens through its JWKS endpoint; one OpenTelemetry trace covers the whole path. Everything has CI, and the repository includes a Render blueprint and a TLS profile for managed Kafka (Aiven) that show how it is deployed. It is meant as a reference project: the screenshots come from the running app, and the "Como rodar" section starts it locally. The API is organized by feature rather than with hexagonal architecture on purpose; the section "Por que camadas por feature e não hexagonal" explains the trade-off. The rest of this README is in Portuguese.
 
 O repositório é um monorepo com as duas pontas do produto:
 
@@ -144,19 +144,21 @@ No celular, use o IP da máquina na rede local, porque `localhost` aponta para o
 | Doador | `doador@maoamiga.dev` | `maoamiga123` |
 | Responsável | `responsavel@maoamiga.dev` | `maoamiga123` |
 
-## Deploy
+Para ver o fluxo completo, com Kafka e os avisos, o [notification-service](https://github.com/jonatasEdward/notification-service#end-to-end-test-tracing-and-load) tem um ambiente de ponta a ponta em Docker que sobe os dois serviços juntos.
 
-| Parte | Onde roda | Como |
+## Como publicar
+
+O repositório já traz o que é preciso para colocar o projeto no ar:
+
+| Parte | Sugestão | O que já está pronto |
 | --- | --- | --- |
-| Banco | Neon (PostgreSQL gerenciado) | conexão com SSL; o schema é criado pelo Flyway na subida da API |
-| API | Render, a partir do `apps/api/Dockerfile` | descrita em [`render.yaml`](render.yaml); novo deploy a cada push na `main` |
-| Kafka | Aiven (plano free) | TLS com certificado de cliente, perfil `kafka-aiven`; tópicos `maoamiga.donations.v1` e `.DLT` |
-| Avisos | Render ([notification-service](https://github.com/jonatasEdward/notification-service)) | consome os eventos de doação do Kafka e valida o JWT pelo JWKS desta API |
-| App web | GitHub Pages | workflow [`deploy-web.yml`](.github/workflows/deploy-web.yml), que gera o build web do Expo |
+| Banco | PostgreSQL gerenciado (ex.: Neon) | conexão com SSL; o schema é criado pelo Flyway na subida da API |
+| API | Render, a partir do `apps/api/Dockerfile` | serviço descrito em [`render.yaml`](render.yaml) |
+| Kafka | Kafka gerenciado (ex.: Aiven) | perfil `kafka-aiven`, com TLS e certificado de cliente; tópicos `maoamiga.donations.v1` e `.DLT` |
+| Avisos | [notification-service](https://github.com/jonatasEdward/notification-service) | consome os eventos de doação e valida o JWT pelo JWKS desta API |
+| App web | GitHub Pages | workflow [`deploy-web.yml`](.github/workflows/deploy-web.yml), executado manualmente, que gera o build web do Expo |
 
-A API roda com os perfis `prod,demo,kafka-aiven`. O `prod` desliga o Swagger e exige `JWT_PRIVATE_KEY`. O `demo` carrega os pontos e as contas de demonstração, e o `kafka-aiven` configura a conexão TLS com o Kafka. A chave do JWT, os certificados do Kafka e os dados do banco são preenchidos no painel do Render e nunca entram no repositório.
-
-As instâncias gratuitas do Render dormem depois de 15 minutos sem tráfego. Por isso, a primeira requisição depois de um tempo parado pode levar um ou dois minutos. Os eventos não se perdem enquanto os serviços dormem: ficam no outbox ou no Kafka e são processados quando os serviços acordam.
+Em produção, a API roda com os perfis `prod,demo,kafka-aiven`. O `prod` desliga o Swagger e exige `JWT_PRIVATE_KEY`. O `demo` carrega os pontos e as contas de demonstração, e o `kafka-aiven` configura a conexão TLS com o Kafka. A chave do JWT, os certificados do Kafka e os dados do banco ficam nas variáveis de ambiente do serviço e nunca entram no repositório.
 
 ## Testes
 
